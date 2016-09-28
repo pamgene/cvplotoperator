@@ -3,6 +3,8 @@
 export(computeCVData)
 export(operatorProperties)
 export(shinyServerRun)
+export(shinyServerShowResults)
 import(bnutil)
 import(dplyr)
+import(ggplot2)
 import(shiny)

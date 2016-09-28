@@ -13,5 +13,6 @@ RoxygenNote: 5.0.1
 Imports:
     bnutil,
     shiny,
-    dplyr
+    dplyr,
+    ggplot2
 Suggests: testthat
