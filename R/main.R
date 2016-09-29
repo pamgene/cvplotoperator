@@ -48,9 +48,9 @@ shinyServerRun = function(input, output, session, context) {
       result = AnnotatedData$new(data = aResult[,forBn ], metadata = meta)
       context$setResult(result)
       save(file = file.path(folder, "runData.RData"), aResult)
-      return(folder)
+      return("Done!")
     })
-    stopApp()
+
   })
 }
 
