@@ -15,7 +15,7 @@ computeCVData = function(annotatedData) {
     Color = "Main"
   }
   data = data.frame(data, Color = Color)
-  suppresWarnings({
+  suppressWarnings({
     aResult = data %>%group_by(rowSeq, colSeq) %>%
       summarise( m = mean(value),
                  stdev = sd(value),
