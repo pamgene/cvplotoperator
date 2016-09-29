@@ -27,13 +27,19 @@ shinyServerRun = function(input, output, session, context) {
   observe({
     getData=getDataReactive$value
     getFolder = getFolderReactive$value
-    getProperties = getPropertiesReactive$value
+    #getProperties = getPropertiesReactive$value
 
     if (is.null(getData)){
       return()
     }
 
+    if(is.null(getFolder)){
+      return()
+    }
+
     data = getData()
+    folder = getFolder()
+
     output$banner = renderText({
       aResult = computeCVData(data)
       forBn = !(colnames(aResult) %in% c("pane", "lvar"))
@@ -41,7 +47,6 @@ shinyServerRun = function(input, output, session, context) {
                         groupingType = c("rowSeq", "colSeq", "QuantitationType","QuantitationType","QuantitationType", "QuantitationType"))
       result = AnnotatedData$new(data = aResult[,forBn ], metadata = meta)
       context$setResult(result)
-      folder = getFolder()
       save(file = file.path(folder, "runData.RData"), aResult)
       return(folder)
     })

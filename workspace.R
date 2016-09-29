@@ -40,4 +40,4 @@ bnMessageHandler$getDataHandler = getdata
 bnMessageHandler$setResultHandler = setResult
 
 
-bnshiny::startBNTestShiny('cvplotoperator', sessionType='show', bnMessageHandler=bnMessageHandler)
+bnshiny::startBNTestShiny('cvplotoperator', sessionType='run', bnMessageHandler=bnMessageHandler)
