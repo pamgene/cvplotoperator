@@ -6,10 +6,7 @@
 #
 #' @export
 operatorProperties = function() {
-  aPropList = list(
-    list('Fit CV model', list('Yes', 'No') )
-  )
-  return(aPropList)
+
 }
 
 #' @export
@@ -28,7 +25,6 @@ shinyServerRun = function(input, output, session, context) {
   getPropertiesReactive = context$getPropertiesAsMap()
 
   observe({
-
     getData=getDataReactive$value
     getFolder = getFolderReactive$value
     getProperties = getPropertiesReactive$value
@@ -49,7 +45,7 @@ shinyServerRun = function(input, output, session, context) {
       save(file = file.path(folder, "runData.RData"), aResult)
       return(folder)
     })
-    #stopApp()
+    stopApp()
   })
 }
 
@@ -60,8 +56,23 @@ shinyServerShowResults = function(input, output, session, context) {
     fluidPage(
       titlePanel("CV plots"),
       sidebarLayout(
-        sidebarPanel(h4("Controls")),
-        mainPanel(plotOutput("cvplot"))
+        sidebarPanel(
+          wellPanel(
+            checkboxInput("dofit", "Show CV model fit", value = TRUE),
+            sliderInput("phigh", label = h5("Quantile for high signal spots"),min = 0.8, max = 1, value = 0.98),
+            sliderInput("plow" , label = h5("Quantile for low signal spots"), min = 0, max = 0.2, value = 0.05)
+          ),
+          wellPanel(
+            checkboxInput("logx" , "Logarithmic x-axis", value = FALSE),
+            textInput("xmin",    label = "x-axis lower limit", value = "0"),
+            textInput("xmax",    label=  "x-axis upper limit", value = "auto"),
+            textInput('ymin',    label = "y-axis lower limit", value = "0"),
+            textInput('ymax',    label = "y-axis upper limit", value = "1")
+          )
+        ),
+        mainPanel(plotOutput("cvplot"),
+                  tableOutput("fitresult")
+        )
       )
     )
   })
@@ -75,12 +86,29 @@ shinyServerShowResults = function(input, output, session, context) {
 
     load(file.path(folder, "runData.RData"))
 
+    doFit = reactive({
+      aResult %>% group_by(pane) %>% do(cvmodel(., pLow = input$plow, pHigh = input$phigh))
+
+    })
+
     output$cvplot = renderPlot({
-      aResult = aResult %>% group_by(pane) %>% do(cvmodel(.))
-      aPlot = ggplot(aResult, aes(x = m, y = cv) ) + geom_point() + facet_wrap(~pane)
-      aPlot = aPlot + ylim(c(0, 0.5))
-      #print(aPlot)
+      if (input$dofit){
+        aResult = doFit()
+      }
+      xLim = as.numeric(c(input$xmin, input$xmax))
+      yLim = as.numeric(c(input$ymin, input$ymax))
+      aPlot = cvPlot(aResult, showFit = input$dofit, xLog = input$logx, xLim = xLim, yLim = yLim)
       return(aPlot)
+    })
+
+    output$fitresult = renderTable({
+      if(input$dofit){
+        aResult = doFit()
+        aResult %>% group_by(pane) %>%
+        summarise(.,std.low = sqrt(identity1(ssq0)) , CV.high = sqrt(identity1(ssq1)) )
+      } else {
+        data.frame()
+      }
     })
   })
 }
