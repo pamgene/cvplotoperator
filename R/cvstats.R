@@ -78,21 +78,19 @@ cvmodel = function(aResult, pLow = 0.05, pHigh = 0.95, maxIter = 25){
   return(aResult)
 }
 
-cvPlot = function(aFrame, xLim = NULL,xLog = FALSE, yLim = c(0, 0.5), showFit = TRUE){
+cvPlot = function(aFrame, xLim = c(NA,NA),xLog = FALSE, yLim = c(0, 0.5), showFit = TRUE){
   if (showFit){
     aPlot = ggplot(aFrame, aes(x = m, y = cv, colour = presence, shape = bHigh) ) + geom_point()  + geom_line(aes(x = m, y = cvFit) , colour = "red")
   } else {
     aPlot = ggplot(aFrame, aes(x = m, y = cv)) + geom_point(colour ="blue")
   }
-
-  aPlot = aPlot + ylim(yLim)
-  if (!is.null(xLim)){
-    aPlot = aPlot + xlim(xLim)
-  }
   aPlot = aPlot + facet_wrap(~pane)
+  aPlot = aPlot + ylim(yLim)
+  aPlot = aPlot + xlim(xLim)
   if(xLog){
     aPlot = aPlot + scale_x_log10()
   }
+
   return(aPlot)
 }
 

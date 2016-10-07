@@ -45,10 +45,12 @@ shinyServerRun = function(input, output, session, context) {
       forBn = !(colnames(aResult) %in% c("pane", "lvar"))
       meta = data.frame(labelDescription = colnames(aResult)[forBn],
                         groupingType = c("rowSeq", "colSeq", "QuantitationType","QuantitationType","QuantitationType", "QuantitationType"))
-      result = AnnotatedData$new(data = aResult[,forBn ], metadata = meta)
+
+      edit(aResult[,forBn])
+      result = AnnotatedData$new(data = as.data.frame(aResult[,forBn ]), metadata = meta)
       context$setResult(result)
       save(file = file.path(folder, "runData.RData"), aResult)
-      return("Done!")
+      return("Done!!")
     })
 
   })
@@ -96,13 +98,18 @@ shinyServerShowResults = function(input, output, session, context) {
 
     })
 
-    output$cvplot = renderPlot({
+    cfgPlot = function(){
       if (input$dofit){
         aResult = doFit()
       }
       xLim = as.numeric(c(input$xmin, input$xmax))
       yLim = as.numeric(c(input$ymin, input$ymax))
       aPlot = cvPlot(aResult, showFit = input$dofit, xLog = input$logx, xLim = xLim, yLim = yLim)
+    }
+
+
+    output$cvplot = renderPlot({
+      aPlot = cfgPlot()
       return(aPlot)
     })
 
@@ -115,5 +122,6 @@ shinyServerShowResults = function(input, output, session, context) {
         data.frame()
       }
     })
+
   })
 }

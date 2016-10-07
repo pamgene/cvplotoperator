@@ -4,19 +4,7 @@ library(cvplotoperator)
 
 getdata = function() {
 
- metadata = data.frame(labelDescription= colnames(RepData),
-                           groupingType=c("value",
-                                          "IsOutlier",
-                                          "QuantitationType",
-                                          "ids",
-                                          "sids",
-                                          "rowSeq",
-                                          "colSeq",
-                                          "Color",
-                                          "Array",
-                                          "Spot"))
-
-  return(AnnotatedData$new(data=RepData, metadata=metadata))
+  return(AnnotatedData$new(data=validation, metadata=validation.meta))
 }
 
 setResult = function(annotatedResult){
