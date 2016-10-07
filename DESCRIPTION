@@ -1,7 +1,7 @@
 Package: cvplotoperator
 Type: Package
 Title: CV plot operator
-Version: 1.9
+Version: 1.10
 Author: Rik de Wijn
 Date: 2016-9-29
 Maintainer: PamGene Support <support@pamgene.com>

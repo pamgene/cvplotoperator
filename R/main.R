@@ -48,7 +48,7 @@ shinyServerRun = function(input, output, session, context) {
                         groupingType = c("rowSeq", "colSeq", "QuantitationType","QuantitationType","QuantitationType", "QuantitationType"))
       result = AnnotatedData$new(data = as.data.frame(aResult[,forBn ]), metadata = meta)
       context$setResult(result)
-      return("Done!!")
+      return(c(folder, dir(folder)))
     })
 
   })
