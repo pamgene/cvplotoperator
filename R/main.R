@@ -42,12 +42,12 @@ shinyServerRun = function(input, output, session, context) {
     output$banner = renderText({
       aResult = computeCVData(data)
       aResult[['nreps']] = as.double(aResult[['nreps']])
+      save(file = file.path(folder, "runData.RData"), aResult)
       forBn = !(colnames(aResult) %in% c("pane", "lvar"))
       meta = data.frame(labelDescription = colnames(aResult)[forBn],
                         groupingType = c("rowSeq", "colSeq", "QuantitationType","QuantitationType","QuantitationType", "QuantitationType"))
       result = AnnotatedData$new(data = as.data.frame(aResult[,forBn ]), metadata = meta)
       context$setResult(result)
-      save(file = file.path(folder, "runData.RData"), aResult)
       return("Done!!")
     })
 
