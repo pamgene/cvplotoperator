@@ -11,7 +11,6 @@ operatorProperties = function() {
 
 #' @export
 shinyServerRun = function(input, output, session, context) {
-
   output$body = renderUI({
     mainPanel(
       h4("Creating CV plots"),
@@ -42,14 +41,14 @@ shinyServerRun = function(input, output, session, context) {
 
     output$banner = renderText({
       aResult = computeCVData(data)
+      aResult[['nreps']] = as.double(aResult[['nreps']])
       forBn = !(colnames(aResult) %in% c("pane", "lvar"))
       meta = data.frame(labelDescription = colnames(aResult)[forBn],
                         groupingType = c("rowSeq", "colSeq", "QuantitationType","QuantitationType","QuantitationType", "QuantitationType"))
-
-      edit(aResult[,forBn])
       result = AnnotatedData$new(data = as.data.frame(aResult[,forBn ]), metadata = meta)
       context$setResult(result)
       save(file = file.path(folder, "runData.RData"), aResult)
+      stopApp()
       return("Done!!")
     })
 

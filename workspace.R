@@ -8,19 +8,8 @@ getdata = function() {
 }
 
 setResult = function(annotatedResult){
-
-  result = annotatedResult$data
-
-
-  # expect_equal(dim(result), c(2,8))
-  # expect_equal(colnames(result), c('rowSeq',
-  #                                  'colSeq',
-  #                                  'slope',
-  #                                  'intercept',
-  #                                  'R2',
-  #                                  'nPoints',
-  #                                  'Result',
-  #                                  'fractionPresent'))
+#result = annotatedResult$data
+return(annotatedResult)
 }
 
 bnMessageHandler = bnshiny::BNMessageHandler$new()
