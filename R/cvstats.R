@@ -6,21 +6,16 @@
 #'@return
 #'aResult, a data frame with various per cell stats as columns.
 #' @export
-computeCVData = function(annotatedData) {
-  colors = annotatedData$metadata$groupingType %in% "Color"
-  data = subset(annotatedData$data, !IsOutlier)
-  if(any(colors)){
-    Color = droplevels(interaction(data[, colors]))
-  } else {
-    Color = "Main"
-  }
-  data = data.frame(data, Color = Color)
+computeCVData = function(df, value='value', color='Color', groupBy=c('rowSeq','colSeq')) {
+
+  data = data.frame(value=df[[value]], Color=df[[color]], df[groupBy])
+
   suppressWarnings({
-    aResult = data %>%group_by(rowSeq, colSeq) %>%
+    aResult = data %>%group_by_(.dots=groupBy) %>%
       summarise( m = mean(value),
                  stdev = sd(value),
                  cv = stdev/m,
-                 nreps = length(value),
+                 nreps = as.double(length(value)),
                  lvar = var(log(value)),
                  pane = identity1(Color))
   })
