@@ -11,6 +11,7 @@ operatorProperties = function() {
 
 #' @export
 shinyServerRun = function(input, output, session, context) {
+
   output$body = renderUI({
     mainPanel(
       h4("Creating CV plots"),
@@ -20,7 +21,7 @@ shinyServerRun = function(input, output, session, context) {
   })
 
   getDataReactive = context$getData()
-  getFolderReactive = context$getFolder()
+  getFolderReactive = context$getRunFolder()
   getPropertiesReactive = context$getPropertiesAsMap()
 
   observe({
@@ -36,19 +37,30 @@ shinyServerRun = function(input, output, session, context) {
       return()
     }
 
-    data = getData()
+    annotatedData = getData()
     folder = getFolder()
 
+    print(folder)
+
     output$banner = renderText({
+
+      if(annotatedData$hasColors){
+        Color = droplevels(interaction(annotatedData$getColors()))
+      } else {
+        Color = "Main"
+      }
+      data = data.frame(annotatedData$getData(outlier=FALSE), Color = Color)
       aResult = computeCVData(data)
-      aResult[['nreps']] = as.double(aResult[['nreps']])
-      save(file = file.path(folder, "runData.RData"), aResult)
+
       forBn = !(colnames(aResult) %in% c("pane", "lvar"))
       meta = data.frame(labelDescription = colnames(aResult)[forBn],
                         groupingType = c("rowSeq", "colSeq", "QuantitationType","QuantitationType","QuantitationType", "QuantitationType"))
+
+
       result = AnnotatedData$new(data = as.data.frame(aResult[,forBn ]), metadata = meta)
       context$setResult(result)
-      return(c(folder, dir(folder)))
+      save(file = file.path(folder, "runData.RData"), aResult)
+      return("Done!!")
     })
 
   })
@@ -81,13 +93,15 @@ shinyServerShowResults = function(input, output, session, context) {
       )
     )
   })
-  getFolderReactive = context$getFolder()
+  getFolderReactive = context$getRunFolder()
 
   observe({
 
     getFolder = getFolderReactive$value
     if (is.null(getFolder)) return()
     folder = getFolder()
+
+    print(folder)
 
     load(file.path(folder, "runData.RData"))
 
@@ -115,7 +129,7 @@ shinyServerShowResults = function(input, output, session, context) {
       if(input$dofit){
         aResult = doFit()
         aResult %>% group_by(pane) %>%
-        summarise(.,std.low = sqrt(identity1(ssq0)) , CV.high = sqrt(identity1(ssq1)) )
+          summarise(.,std.low = sqrt(identity1(ssq0)) , CV.high = sqrt(identity1(ssq1)) )
       } else {
         data.frame()
       }
