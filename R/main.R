@@ -80,6 +80,7 @@ shinyServerShowResults = function(input, output, session, context) {
             sliderInput("plow" , label = h5("Quantile for low signal spots"), min = 0, max = 0.2, value = 0.05)
           ),
           wellPanel(
+            checkboxInput("collapse", "Collapse panes", value = FALSE),
             checkboxInput("logx" , "Logarithmic x-axis", value = FALSE),
             textInput("xmin",    label = "x-axis lower limit", value = "0"),
             textInput("xmax",    label=  "x-axis upper limit", value = "auto"),
@@ -116,7 +117,11 @@ shinyServerShowResults = function(input, output, session, context) {
       }
       xLim = as.numeric(c(input$xmin, input$xmax))
       yLim = as.numeric(c(input$ymin, input$ymax))
-      aPlot = cvPlot(aResult, showFit = input$dofit, xLog = input$logx, xLim = xLim, yLim = yLim)
+      aPlot = cvPlot(aResult, showFit = input$dofit,
+                              xLog = input$logx,
+                              xLim = xLim,
+                              yLim = yLim,
+                              collapse = input$collapse)
     }
 
 

@@ -73,19 +73,27 @@ cvmodel = function(aResult, pLow = 0.05, pHigh = 0.95, maxIter = 25){
   return(aResult)
 }
 
-cvPlot = function(aFrame, xLim = c(NA,NA),xLog = FALSE, yLim = c(0, 0.5), showFit = TRUE){
-  if (showFit){
-    aPlot = ggplot(aFrame, aes(x = m, y = cv, colour = presence, shape = bHigh) ) + geom_point()  + geom_line(aes(x = m, y = cvFit) , colour = "red")
-  } else {
-    aPlot = ggplot(aFrame, aes(x = m, y = cv)) + geom_point(colour ="blue")
-  }
-  aPlot = aPlot + facet_wrap(~pane)
-  aPlot = aPlot + ylim(yLim)
-  aPlot = aPlot + xlim(xLim)
-  if(xLog){
-    aPlot = aPlot + scale_x_log10()
-  }
-
+cvPlot = function(aFrame, xLim = c(NA,NA),xLog = FALSE, yLim = c(0, 0.5), showFit = TRUE, collapse = FALSE){
+  suppressWarnings({
+    if (showFit){
+      aPlot = ggplot(aFrame, aes(x = m, y = cv, colour = pane, shape = bHigh) ) + geom_point()  + geom_line(aes(x = m, y = cvFit) , colour = "red")
+    } else {
+      aPlot = ggplot(aFrame, aes(x = m, y = cv)) + geom_point(colour ="blue")
+    }
+    if (!collapse){
+      aPlot = aPlot + facet_wrap(~pane)
+    }
+    aPlot = aPlot + ylim(yLim)
+    aPlot = aPlot + xlim(xLim)
+    aPlot = aPlot + scale_colour_brewer(type = "qual")
+    if(xLog){
+      if (!any(is.na(xLim)) & all(xLim > 0)){
+        aPlot = aPlot + scale_x_log10(limits = xLim)
+      } else {
+        aPlot = aPlot + scale_x_log10()
+      }
+    }
+  })
   return(aPlot)
 }
 
