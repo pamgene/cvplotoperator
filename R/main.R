@@ -107,37 +107,50 @@ shinyServerShowResults = function(input, output, session, context) {
     load(file.path(folder, "runData.RData"))
 
     doFit = reactive({
-      aResult %>% group_by(pane) %>% do(cvmodel(., pLow = input$plow, pHigh = input$phigh))
-
+      if(!input$collapse){
+        aResult = aResult %>% group_by(pane) %>% do(cvmodel(., pLow = input$plow, pHigh = input$phigh))
+      } else {
+        aResult = cvmodel(aResult, pLow = input$plow, pHigh = input$phigh)
+      }
+      return(aResult)
     })
 
     cfgPlot = function(){
-      if (input$dofit){
-        aResult = doFit()
-      }
-      xLim = as.numeric(c(input$xmin, input$xmax))
-      yLim = as.numeric(c(input$ymin, input$ymax))
-      aPlot = cvPlot(aResult, showFit = input$dofit,
-                              xLog = input$logx,
-                              xLim = xLim,
-                              yLim = yLim,
-                              collapse = input$collapse)
+      suppressWarnings({
+        if (input$dofit){
+          aResult = doFit()
+        }
+        xLim = as.numeric(c(input$xmin, input$xmax))
+        yLim = as.numeric(c(input$ymin, input$ymax))
+        aPlot = cvPlot(aResult, showFit = input$dofit,
+                       xLog = input$logx,
+                       xLim = xLim,
+                       yLim = yLim,
+                       collapse = input$collapse)
+
+      })
     }
 
-
     output$cvplot = renderPlot({
-      aPlot = cfgPlot()
+      suppressWarnings({
+        aPlot = cfgPlot()
+      })
       return(aPlot)
     })
 
     output$fitresult = renderTable({
       if(input$dofit){
         aResult = doFit()
-        aResult %>% group_by(pane) %>%
+        if(!input$collapse){
+        aTable = aResult %>% group_by(pane) %>%
           summarise(.,std.low = sqrt(identity1(ssq0)) , CV.high = sqrt(identity1(ssq1)) )
+        } else {
+          aTable  = data.frame(pane = "All panes combined", std.low = aResult$ssq0[1], CV.high = sqrt(aResult$ssq1[1]))
+        }
       } else {
-        data.frame()
+        aTable = data.frame()
       }
+      return(aTable)
     })
 
   })
