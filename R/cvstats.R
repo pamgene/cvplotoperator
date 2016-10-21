@@ -15,6 +15,7 @@ computeCVData = function(df, value='value', color='Color', groupBy=c('rowSeq','c
       summarise( m = mean(value),
                  stdev = sd(value),
                  cv = stdev/m,
+                 snr_db = 10 * log10(abs(m)/stdev),
                  nreps = as.double(length(value)),
                  lvar = var(log(value)),
                  pane = identity1(Color))
@@ -66,15 +67,22 @@ cvmodel = function(aResult, pLow = 0.05, pHigh = 0.95, maxIter = 25){
   )
   if (!is.nan(ssq0) & !is.nan(ssq1)){
     cvFit = sqrt( ( (ssq1)*(aResult$m^2) + (ssq0))/(aResult$m^2) )
+    snrFit = -10 *log10(cvFit)
+    sdFit = sqrt(ssq1 * aResult$m^2 + ssq0)
   } else {
     cvFit = NaN
+    snrFit = NaN
+    sdFit = NaN
   }
-  aResult = data.frame(aResult, ssq0 = ssq0, ssq1 = ssq1, cvFit = cvFit, bHigh = bHigh,  presence = pres)
+  aResult = data.frame(aResult, ssq0 = ssq0, ssq1 = ssq1, cvFit = cvFit, snrFit = snrFit, sdFit = sdFit, bHigh = bHigh,  presence = pres)
   return(aResult)
 }
 
-cvPlot = function(aFrame, xLim = c(NA,NA),xLog = FALSE, yLim = c(0, 0.5), showFit = TRUE, collapse = FALSE){
+cvPlot = function(aFrame, xLim = c(NA,NA),xLog = FALSE, yLim = c(0, NA), showFit = TRUE, collapse = FALSE){
   suppressWarnings({
+
+    if (is.na(yLim[2])) yLim[2] = 0.5
+
     if (showFit){
       aPlot = ggplot(aFrame, aes(x = m, y = cv, colour = pane, shape = bHigh) ) + geom_point()  + geom_line(aes(x = m, y = cvFit) , colour = "red")
     } else {
@@ -97,6 +105,59 @@ cvPlot = function(aFrame, xLim = c(NA,NA),xLog = FALSE, yLim = c(0, 0.5), showFi
   return(aPlot)
 }
 
+snrPlot = function(aFrame, xLim = c(NA,NA),xLog = FALSE, yLim = c(0, NA), showFit = TRUE, collapse = FALSE){
+  suppressWarnings({
+
+    if (is.na(yLim[2])) yLim[2] = 20
+
+    if (showFit){
+      aPlot = ggplot(aFrame, aes(x = m, y = snr_db, colour = pane, shape = bHigh) ) + geom_point()  + geom_line(aes(x = m, y = snrFit) , colour = "red")
+    } else {
+      aPlot = ggplot(aFrame, aes(x = m, y = snr_db ,colour = pane)) + geom_point()
+    }
+    if (!collapse){
+      aPlot = aPlot + facet_wrap(~pane)
+    }
+    aPlot = aPlot + ylim(yLim)
+    aPlot = aPlot + xlim(xLim)
+    aPlot = aPlot + scale_colour_brewer(type = "qual") + ylab("Signal to Noise ratio (dB)")
+    if(xLog){
+      if (!any(is.na(xLim)) & all(xLim > 0)){
+        aPlot = aPlot + scale_x_log10(limits = xLim)
+      } else {
+        aPlot = aPlot + scale_x_log10()
+      }
+    }
+  })
+  return(aPlot)
+}
+
+sdPlot = function(aFrame, xLim = c(NA,NA),xLog = FALSE, yLim = c(0, NA), showFit = TRUE, collapse = FALSE){
+  suppressWarnings({
+
+    if (is.na(yLim[2])) yLim[2] = 0.25* max(aFrame$m)
+
+    if (showFit){
+      aPlot = ggplot(aFrame, aes(x = m, y = stdev, colour = pane, shape = bHigh) ) + geom_point()  + geom_line(aes(x = m, y = sdFit) , colour = "red")
+    } else {
+      aPlot = ggplot(aFrame, aes(x = m, y = stdev ,colour = pane)) + geom_point()
+    }
+    if (!collapse){
+      aPlot = aPlot + facet_wrap(~pane)
+    }
+    aPlot = aPlot + ylim(yLim)
+    aPlot = aPlot + xlim(xLim)
+    aPlot = aPlot + scale_colour_brewer(type = "qual") + ylab("Standard Deviation")
+    if(xLog){
+      if (!any(is.na(xLim)) & all(xLim > 0)){
+        aPlot = aPlot + scale_x_log10(limits = xLim)
+      } else {
+        aPlot = aPlot + scale_x_log10()
+      }
+    }
+  })
+  return(aPlot)
+}
 
 identity1 = function(.).[1]
 

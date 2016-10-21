@@ -51,10 +51,9 @@ shinyServerRun = function(input, output, session, context) {
       }
       data = data.frame(annotatedData$getData(outlier=FALSE), Color = Color)
       aResult = computeCVData(data)
-
       forBn = !(colnames(aResult) %in% c("pane", "lvar"))
       meta = data.frame(labelDescription = colnames(aResult)[forBn],
-                        groupingType = c("rowSeq", "colSeq", "QuantitationType","QuantitationType","QuantitationType", "QuantitationType"))
+                        groupingType = c("rowSeq", "colSeq", "QuantitationType","QuantitationType","QuantitationType","QuantitationType", "QuantitationType"))
 
 
       result = AnnotatedData$new(data = as.data.frame(aResult[,forBn ]), metadata = meta)
@@ -75,17 +74,19 @@ shinyServerShowResults = function(input, output, session, context) {
       sidebarLayout(
         sidebarPanel(
           wellPanel(
-            checkboxInput("dofit", "Show CV model fit", value = TRUE),
+            checkboxInput("dofit", "Show error model fit", value = TRUE),
             sliderInput("phigh", label = h5("Quantile for high signal spots"),min = 0.8, max = 1, value = 0.98),
             sliderInput("plow" , label = h5("Quantile for low signal spots"), min = 0, max = 0.2, value = 0.05)
           ),
           wellPanel(
+            selectInput("plottype", label = h4("Select plot type"),
+                        choices = list("CV plot" = 1, "SNR plot" = 2, "SD plot" = 3), selected = 1),
             checkboxInput("collapse", "Collapse panes", value = FALSE),
             checkboxInput("logx" , "Logarithmic x-axis", value = FALSE),
             textInput("xmin",    label = "x-axis lower limit", value = "0"),
             textInput("xmax",    label=  "x-axis upper limit", value = "auto"),
             textInput('ymin',    label = "y-axis lower limit", value = "0"),
-            textInput('ymax',    label = "y-axis upper limit", value = "1")
+            textInput('ymax',    label = "y-axis upper limit", value = "auto")
           )
         ),
         mainPanel(plotOutput("cvplot"),
@@ -122,11 +123,28 @@ shinyServerShowResults = function(input, output, session, context) {
         }
         xLim = as.numeric(c(input$xmin, input$xmax))
         yLim = as.numeric(c(input$ymin, input$ymax))
-        aPlot = cvPlot(aResult, showFit = input$dofit,
-                       xLog = input$logx,
-                       xLim = xLim,
-                       yLim = yLim,
-                       collapse = input$collapse)
+
+
+        if(input$plottype == 1){
+          aPlot = cvPlot(aResult, showFit = input$dofit,
+                         xLog = input$logx,
+                         xLim = xLim,
+                         yLim = yLim,
+                         collapse = input$collapse)
+
+        } else if (input$plottype == 2){
+          aPlot = snrPlot(aResult, showFit = input$dofit,
+                         xLog = input$logx,
+                         xLim = xLim,
+                         yLim = yLim,
+                         collapse = input$collapse)
+        } else if (input$plottype == 3){
+          aPlot = sdPlot(aResult, showFit = input$dofit,
+                          xLog = input$logx,
+                          xLim = xLim,
+                          yLim = yLim,
+                          collapse = input$collapse)
+        }
 
       })
     }
@@ -143,14 +161,19 @@ shinyServerShowResults = function(input, output, session, context) {
         aResult = doFit()
         if(!input$collapse){
         aTable = aResult %>% group_by(pane) %>%
-          summarise(.,std.low = sqrt(identity1(ssq0)) , CV.high = sqrt(identity1(ssq1)) )
+          summarise(.,std.low = sqrt(identity1(ssq0)) , CV.high = sqrt(identity1(ssq1)))
         } else {
           aTable  = data.frame(pane = "All panes combined", std.low = aResult$ssq0[1], CV.high = sqrt(aResult$ssq1[1]))
         }
       } else {
         aTable = data.frame()
       }
-      return(aTable)
+      if (dim(aTable)[2] == 3)
+      {
+        aTable = data.frame(aTable, snr.high = -10*log10(aTable$CV.high))
+        colnames(aTable) = c("Pane", "Std low signals", "CV high signals", "SNR high signals (dB)")
+        return(aTable)
+      }
     })
 
   })
