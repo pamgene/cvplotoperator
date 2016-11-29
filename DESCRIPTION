@@ -1,11 +1,11 @@
 Package: cvplotoperator
 Type: Package
-Title: CV plot operator
-Version: 2.3
+Title: Interactive CV Plot
+Version: 2.4
 Author: Rik de Wijn
 Date: 2016-10-20
 Maintainer: PamGene Support <support@pamgene.com>
-Description: Plotting and Modeling of Replicate variation
+Description: Plotting and Modeling of Replicate variation, uses a shiny interface.
 URL: http://pamcloud.pamgene.com/wiki/Wiki.jsp?page=MeanAndCV
 License:
 LazyData: TRUE
