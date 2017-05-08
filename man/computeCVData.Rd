@@ -4,7 +4,8 @@
 \alias{computeCVData}
 \title{computeCvData.}
 \usage{
-computeCVData(annotatedData)
+computeCVData(df, value = "value", color = "Color", groupBy = c("rowSeq",
+  "colSeq"))
 }
 \arguments{
 \item{annotatedData}{A annotatedData (bnUtil)  with replicate values per cell.}

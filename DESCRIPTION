@@ -1,7 +1,7 @@
-Package: cvplotoperator
+Package: cvplotoperator3
 Type: Package
 Title: Interactive CV Plot
-Version: 2.4
+Version: 3.0
 Author: Rik de Wijn
 Date: 2016-10-20
 Maintainer: PamGene Support <support@pamgene.com>

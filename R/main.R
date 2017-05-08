@@ -145,7 +145,7 @@ shinyServerShowResults = function(input, output, session, context) {
                           yLim = yLim,
                           collapse = input$collapse)
         }
-
+        aPlot = aPlot + theme_bw()
       })
     }
 
